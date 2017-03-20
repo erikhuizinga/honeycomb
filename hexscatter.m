@@ -24,11 +24,11 @@
 %  'drawEdges' { false } - if true, edges are drawn around each hexagonal
 %  patch.
 %  'showZeros' { false } - if true, bins with 0 counts are shaded; if
-%  false, only bins with non-zero counts are colored. 
-% 
+%  false, only bins with non-zero counts are colored.
+%
 % h = hexscatter( ... ) returns the object handle to the patch object
 % created.
-% 
+%
 % Examples
 % hexscatter(rand(2000,1), rand(2000,1))
 %
@@ -37,152 +37,152 @@
 % Also available in the Bean Matlab Toolkit:
 % https://github.com/brazilbean/bean-matlab-toolkit
 
-function h = hexscatter( xdata, ydata, varargin )
-    %% Convert to vectors
-    xdata = xdata(:);
-    ydata = ydata(:);
-    
-    nix = isnan(xdata) | isnan(ydata) | isinf(xdata) | isinf(ydata);
-    xdata = xdata(~nix);
-    ydata = ydata(~nix);
-    
-    params = default_param( varargin, ...
-        'xlim', [min(xdata(:)) max(xdata(:))], ...
-        'ylim', [min(ydata(:)) max(ydata(:))], ...
-        'res', [100 100], ...
-        'drawEdges', false, ...
-        'showZeros', false);
-    
-    if params.drawedges
-        ec = 'flat';
-    else
-        ec = 'none';
-    end
-    
-    if length(params.res)==1
-        params.res = params.res * [1 1];
-    end
-    
-    %% Determine grid
-    xl = params.xlim;
-    yl = params.ylim;
-    
-    xbins = linspace(xl(1), xl(2), params.res(2));
-    ybins = linspace(yl(1), yl(2), params.res(1));
-    dy = diff(ybins([1 2]))*0.5;
-    
-    [X, Y] = meshgrid(xbins, ybins);
-    [n,m] = size(X);
-    Y(:,1:fix(end/2)*2) = ...
-        Y(:,1:fix(end/2)*2) + repmat([0 dy],[n,fix(m/2)]);
-    
-    %% Map points to boxes
-    % Which pair of columns?
-    dx = diff(xbins([1 2]));
-    foox = floor((xdata - xbins(1)) ./ dx)+1;
-    foox(foox > length(xbins)) = length(xbins);
-    foox(foox < 1) = 1;
-    
-    % Which pair of rows?
-    % Use the first row, which starts without an offset, as the standard
-    fooy = floor((ydata - ybins(1)) ./ diff(ybins([1 2])))+1;
-    fooy(fooy > length(ybins)) = length(ybins);
-    fooy(fooy < 1) = 1;
-    
-    % Which orientation
-    orientation = mod(foox,2) == 1;
+function h = hexscatter(xdata, ydata, varargin)
+%% Convert to vectors
+xdata = xdata(:);
+ydata = ydata(:);
 
-    % Map points to boxes
-    xdata = xdata - xbins(foox)';
-    ydata = ydata - ybins(fooy)';
-    
-    % Which layer
-    layer = ydata > dy;
+nix = isnan(xdata) | isnan(ydata) | isinf(xdata) | isinf(ydata);
+xdata = xdata(~nix);
+ydata = ydata(~nix);
 
-    % Convert to block B format
-    toflip = layer == orientation;
-    xdata(toflip) = dx - xdata(toflip);
+params = default_param( varargin, ...
+    'xlim', [min(xdata(:)) max(xdata(:))], ...
+    'ylim', [min(ydata(:)) max(ydata(:))], ...
+    'res', [100 100], ...
+    'drawEdges', false, ...
+    'showZeros', false);
 
-    ydata(layer==1) = ydata(layer==1) - dy;
-    
-    % Find closest corner
-    topright = xdata.^2 + ydata.^2 > (xdata-dx).^2 + (ydata-dy).^2;
-    clear xdata ydata
-    
-    %% Map corners back to bins
-    % Which x bin?
-    foox = foox + ~(orientation == (layer == topright));
-    foox(foox > length(xbins)) = length(xbins);
-    
-    % Which y bin?
-    fooy = fooy + (layer & topright);
-    fooy(fooy > length(ybins)) = length(ybins);
-    
-    foox = sub2ind(size(X), fooy, foox);
-     % Replaced foox to conserve memory
-    
-    %% Determine counts
-    counts = histc(foox, 1:numel(X))';
-    
-    newplot;
-    xscale = diff(xbins([1 2]))*2/3;
-    yscale = diff(ybins([1 2]))*2/3;
-    theta = 0 : 60 : 360;
-    x = bsxfun(@plus, X(:), cosd(theta)*xscale)';
-    y = bsxfun(@plus, Y(:), sind(theta)*yscale)';
-    
-    if params.showzeros
-        h = patch(x, y, counts, 'edgeColor', ec);
-    else
-        jj = counts > 0;
-        h = patch(x(:,jj), y(:,jj), counts(jj), 'edgeColor', ec);
-    end
-    
-    xlim(params.xlim);
-    ylim(params.ylim);
-    
-    if nargout == 0
-        clear h;
-    end
-    
-    %% Function: default_param
-    % Gordon Bean, March 2012
-    % Copied from https://github.com/brazilbean/bean-matlab-toolkit
-    function params = default_param( params, varargin )
+if params.drawedges
+    ec = 'flat';
+else
+    ec = 'none';
+end
+
+if length(params.res) == 1
+    params.res = params.res * [1, 1];
+end
+
+%% Determine grid
+xl = params.xlim;
+yl = params.ylim;
+
+xbins = linspace(xl(1), xl(2), params.res(2));
+ybins = linspace(yl(1), yl(2), params.res(1));
+dy = diff(ybins([1, 2])) * 0.5;
+
+[X, Y] = meshgrid(xbins, ybins);
+[n, m] = size(X);
+Y(:, 1 : fix(end / 2) * 2) = ...
+    Y(:, 1 : fix(end / 2) * 2) + repmat([0, dy], [n, fix(m / 2)]);
+
+%% Map points to boxes
+% Which pair of columns?
+dx = diff(xbins([1, 2]));
+foox = floor((xdata - xbins(1)) ./ dx) + 1;
+foox(foox > length(xbins)) = length(xbins);
+foox(foox < 1) = 1;
+
+% Which pair of rows?
+% Use the first row, which starts without an offset, as the standard
+fooy = floor((ydata - ybins(1)) ./ diff(ybins([1, 2]))) + 1;
+fooy(fooy > length(ybins)) = length(ybins);
+fooy(fooy < 1) = 1;
+
+% Which orientation
+orientation = mod(foox, 2) == 1;
+
+% Map points to boxes
+xdata = xdata - xbins(foox).';
+ydata = ydata - ybins(fooy).';
+
+% Which layer
+layer = ydata > dy;
+
+% Convert to block B format
+toflip = layer == orientation;
+xdata(toflip) = dx - xdata(toflip);
+
+ydata(layer == 1) = ydata(layer == 1) - dy;
+
+% Find closest corner
+topright = xdata.^2 + ydata.^2 > (xdata - dx).^2 + (ydata - dy).^2;
+clear xdata ydata
+
+%% Map corners back to bins
+% Which x bin?
+foox = foox + ~(orientation == (layer == topright));
+foox(foox > length(xbins)) = length(xbins);
+
+% Which y bin?
+fooy = fooy + (layer & topright);
+fooy(fooy > length(ybins)) = length(ybins);
+
+foox = sub2ind(size(X), fooy, foox);
+% Replaced foox to conserve memory
+
+%% Determine counts
+counts = histc(foox, 1 : numel(X)).';
+
+newplot;
+xscale = diff(xbins([1, 2])) * 2 / 3;
+yscale = diff(ybins([1, 2])) * 2 / 3;
+theta = 0 : 60 : 360;
+x = bsxfun(@plus, X(:), cosd(theta) * xscale).';
+y = bsxfun(@plus, Y(:), sind(theta) * yscale).';
+
+if params.showzeros
+    h = patch(x, y, counts, 'edgeColor', ec);
+else
+    jj = counts > 0;
+    h = patch(x(:, jj), y(:, jj), counts(jj), 'edgeColor', ec);
+end
+
+xlim(params.xlim);
+ylim(params.ylim);
+
+if nargout == 0
+    clear h;
+end
+
+%% Function: default_param
+% Gordon Bean, March 2012
+% Copied from https://github.com/brazilbean/bean-matlab-toolkit
+    function params = default_param(params, varargin)
         if (iscell(params))
             params = get_params(params{:});
         end
         defaults = get_params(varargin{:});
-
-        for f = fieldnames(defaults)'
+        
+        for f = fieldnames(defaults).'
             field = f{:};
-            if (~isfield( params, lower(field) ))
+            if (~isfield(params, lower(field)))
                 params.(lower(field)) = defaults.(field);
             end
         end
     end
 
-    %% Function: get_params - return a struct of key-value pairs
-    % Gordon Bean, January 2012
-    %
-    % Usage
-    % params = get_params( ... )
-    %
-    % Used to parse key-value pairs in varargin - returns a struct.
-    % Converts all keys to lower case.
-    %
-    % Copied from https://github.com/brazilbean/bean-matlab-toolkit
-    function params = get_params( varargin )
+%% Function: get_params - return a struct of key-value pairs
+% Gordon Bean, January 2012
+%
+% Usage
+% params = get_params( ... )
+%
+% Used to parse key-value pairs in varargin - returns a struct.
+% Converts all keys to lower case.
+%
+% Copied from https://github.com/brazilbean/bean-matlab-toolkit
+    function params = get_params(varargin)
         params = struct;
-
+        
         nn = length(varargin);
-        if (mod(nn,2) ~= 0)
+        if (mod(nn, 2) ~= 0)
             error('Uneven number of parameters and values in list.');
         end
-
-        tmp = reshape(varargin, [2 nn/2]);
-        for kk = 1 : size(tmp,2)
-            params.(lower(tmp{1,kk})) = tmp{2,kk};
+        
+        tmp = reshape(varargin, [2, nn / 2]);
+        for kk = 1 : size(tmp, 2)
+            params.(lower(tmp{1, kk})) = tmp{2, kk};
         end
     end
 end
