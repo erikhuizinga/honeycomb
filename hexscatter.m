@@ -1,43 +1,70 @@
-%% h = HEXSCATTER( x, y, ... )
-% Gordon Bean, February 2014
-% A scatter-plot substitute - generate a density plot using hexagonal
-% patches.
+function h = hexscatter(xdata, ydata, varargin)
+% HEXSCATTER Create a scatter plot using hexagonal binning
 %
-% Syntax
-% hexscatter(xdata, ydata)
-% hexscatter(xdata, ydata, 'Name', Value, ...)
-% h = hexscatter(...)
+%   HEXSCATTER(x, y) creates a scatter plot using hexagons of the data in x
+%   and y. The colour intensity of the hexagons indicates the density of
+%   points in the hexagon. x and y must contain the same number of elements
+%   and can be vectors or matrices, in which every element in x belongs to
+%   the same element in y (using linear indexing in the case of matrices).
+%   Any NaN or Inf values in x or y are ignored (with the corresponding
+%   element in the other array). Only the real part of any complex numbers
+%   in x or y will be used an a warning will be issued.
 %
-% Description
-% hexscatter(xdata, ydata) creates a density plot of the ydata versus the
-% xdata using hexagonal tiles. xdata and ydata should be vectors. NaN
-% values (and their corresponding values in the other vector) are ignored.
+%   HEXSCATTER(..., Name, Value) sets options for the plot using Name-Value
+%   pair arguments. The possible arguments are listed below.
 %
-% hexscatter(xdata, ydata, 'Name', Value, ...) accepts name-value pairs of
-% arguments from the following list (defaults in {}):
-%  'xlim' { [min(xdadta(:) max(xdata(:))] } - a 2-element vector containing
-%  the lower and upper bounds of the 2nd dimension of the grid.
-%  'ylim' { [min(ydadta(:) max(ydata(:))] } - a 2-element vector containing
-%  the lower and upper bounds of the 1st dimension of the grid.
-%  'res' { 50 } - the resolution, or number of bins in each dimension. The
-%  total number of bins will be the resolution squared.
-%  'drawEdges' { false } - if true, edges are drawn around each hexagonal
-%  patch.
-%  'showZeros' { false } - if true, bins with 0 counts are shaded; if
-%  false, only bins with non-zero counts are colored.
+%   h = HEXSCATTER(...) returns the handles to the created patch object,
+%   which is used to implement this function.
 %
-% h = hexscatter( ... ) returns the object handle to the patch object
-% created.
+%   Name-Value Pair Arguments
+%   Specify optional comma-separated pairs of Name,Value arguments to
+%   access various options. Name is the argument name and Value is the
+%   corresponding value. Name must appear inside single quotes (' '). You
+%   can specify several name and value pair arguments in any order as
+%   Name1, Value1, ..., NameN, ValueN.
+%   Example: 'xlim', [0, 1], 'ylim', [1, 10]
 %
-% Examples
-% hexscatter(rand(2000,1), rand(2000,1))
+%   'xlim': x-axis limits
+%   [min(x(:)), max(x(:))] (default) | two-element numeric vector
+%   The x-axis limits specified as a two-element numeric vector. The first
+%   and second element correspond to the left and right x-axis limit
+%   respectively. The second element must be greater than the first.
 %
-% hexscatter(rand(2000,1), rand(2000,1), 'res', 90)
+%   'ylim': y-axis limits
+%   [min(y(:)), max(y(:))] (default) | two-element numeric vector
+%   The y-axis limits specified as a two-element numeric vector. The first
+%   and second element correspond to the lower and upper y-axis limit
+%   respectively. The second element must be greater than the first.
+%
+%   'res': resolution
+%   [100, 100] (default) | numeric scalar | two-element numeric vector
+%   The hexagonal grid resolution specified either as a scalar, or a
+%   two-element vector. The resolution is the number of hexagons in
+%   horizontal and vertical direction. If the specified value is a
+%   two-element vector, the first element corresponds to the vertical
+%   resolution and the second to the horizontal resolution. If the
+%   specified value is scalar, then its value is used for both directions.
+%
+%   'drawEdges': draw edges around hexagons
+%   false (default) | true
+%   Draw edges around the hexagons if the specified value is true.
+%
+%   'showZeros': show zero count hexagons
+%   false (default) | true
+
+% This function is based on hexscatter.m by Gordon Bean, source:
+% https://raw.githubusercontent.com/brazilbean/bean-matlab-toolkit/
+% ab1885c10f6bf96307fcbf73b6eea7657bf38da0/hexscatter.m
 %
 % Also available in the Bean Matlab Toolkit:
 % https://github.com/brazilbean/bean-matlab-toolkit
+%
+% License of original:
+% https://raw.githubusercontent.com/brazilbean/bean-matlab-toolkit/
+% 1b761acf84330dca577ac0e60e938dc785989acc/LICENSE
 
-function h = hexscatter(xdata, ydata, varargin)
+%TODO reference to license
+
 %% Convert to vectors
 xdata = xdata(:);
 ydata = ydata(:);
