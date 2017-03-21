@@ -1,14 +1,14 @@
 function h = hexscatter(xdata, ydata, varargin)
 % HEXSCATTER Create a scatter plot using hexagonal binning
 %
-%   HEXSCATTER(x, y) creates a scatter plot using hexagons of the data in x
-%   and y. The colour intensity of the hexagons indicates the density of
-%   points in the hexagon. x and y must contain the same number of elements
-%   and can be vectors or matrices, in which every element in x belongs to
-%   the same element in y (using linear indexing in the case of matrices).
-%   Any NaN or Inf values in x or y are ignored (with the corresponding
-%   element in the other array). Only the real part of any complex numbers
-%   in x or y will be used an a warning will be issued.
+%   HEXSCATTER(x, y) creates a scatter plot using hexagonal binning of the
+%   data in x and y. The colour intensity of the hexagons indicates the
+%   density of points in the hexagon. x and y must contain the same number
+%   of elements and can be vectors or matrices, in which every element in x
+%   belongs to the same element in y (using linear indexing in the case of
+%   matrices). Any NaN or Inf values in x or y are ignored (with the
+%   corresponding element in the other array). Only the real part of any
+%   complex numbers in x or y will be used an a warning will be issued.
 %
 %   HEXSCATTER(..., Name, Value) sets options for the plot using Name-Value
 %   pair arguments. The possible arguments are listed below.
@@ -63,7 +63,32 @@ function h = hexscatter(xdata, ydata, varargin)
 % https://raw.githubusercontent.com/brazilbean/bean-matlab-toolkit/
 % 1b761acf84330dca577ac0e60e938dc785989acc/LICENSE
 
-%TODO reference to license
+% Copyright (c) 2017, Salman Mashayekh, Gordon Bean, Erik Huizinga
+% All rights reserved.
+%
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+%
+%     * Redistributions of source code must retain the above copyright
+%       notice, this list of conditions and the following disclaimer.
+%     * Redistributions in binary form must reproduce the above copyright
+%       notice, this list of conditions and the following disclaimer in
+%       the documentation and/or other materials provided with the
+%       distribution
+%
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 
 %% Convert to vectors
 xdata = xdata(:);
