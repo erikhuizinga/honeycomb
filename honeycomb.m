@@ -60,6 +60,35 @@ theta = (1/6 : 1/6 : 1) * 360;
 XVertices = bsxfun(@plus, XCenter, rx * cosd(theta));
 YVertices = bsxfun(@plus, YCenter, ry * sind(theta));
 
+
+%% Determine bin counts
+% Get number of hexagons
+numHexagons = numel(XCenter);
+
+% Preallocate bin counts
+counts = zeros(numHexagons, 1);
+
+% Preallocate loop counter
+n = 1;
+
+% Copy data
+xx = x;
+yy = y;
+
+% Loop over hexagons
+while n <= numHexagons && ~isempty(xx)
+    % Determine bin count
+    isInBin = inpolygon(xx, yy, XVertices(:, n), YVertices(:, n));
+    counts(n) = nnz(isInBin);
+    
+    % Clear bin data to prevent double counts on edges
+    xx(isInBin) = [];
+    yy(isInBin) = [];
+    
+    % Increment counter
+    n = n + 1;
+end
+
 %% %TODO debug plots
 hold on
 
