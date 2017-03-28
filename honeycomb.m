@@ -18,22 +18,21 @@ numYBins = numBins;
 xLim = xEdges([1, end]);
 yLim = yEdges([1, end]);
 
-% Calculate number of hexagon radii in range
-numRx = 3 / 2 * (numXBins - 1) + 1;
-numRy = 2 * numYBins - 1;
-
-% Set hexagon radius
-rx = diff(xLim) / numRx;
-ry = diff(yLim) / numRy;
-
-% Set the distance between hexagon centers
+% Calculate number of hexagon radii in data limits and calculate distance
+% between hexagon centers
+numXRadii = 3 / 2 * (numXBins - 1) + 1;
+rx = diff(xLim) / numXRadii;
 dx = 3 / 2 * rx;
-dy = 3 / 2 * ry;
+
+numYRadii = sqrt(3) / 2 * (2 * numYBins - 1);
+ry = diff(yLim) / numYRadii;
+dy = sqrt(3) * ry;
 
 
-% Calculate hexagon centers
-xCenter = linspace(xLim(1) + rx/2, xLim(2) - rx/2, numXBins);
-yCenter = yEdges;
+% Calculate hexagon centers, such that hexagons cover entire data range
+% from x,y limit 1 to x,y limit 2
+xCenter = (xLim(1) + rx/2) : dx : (xLim(2) - rx/2);
+yCenter = yLim(1) : dy : (yLim(2) - dy/2);
 
 
 %% Initialize a grid of hexagon centers
@@ -54,13 +53,14 @@ plot(XCenter, YCenter, 'r^')
 
 
 %% Initialize hexagon vertices
-theta = linspace(pi / 3, 2 * pi, 6);
-XVertices = bsxfun(@plus, XCenter, rx * cos(theta));
-YVertices = bsxfun(@plus, YCenter, ry * sin(theta));
+theta = (1/6 : 1/6 : 1) * 360;
+XVertices = bsxfun(@plus, XCenter, rx * cosd(theta));
+YVertices = bsxfun(@plus, YCenter, ry * sind(theta));
 
 
 %TODO delete me
 hold on
 plot(XVertices(:), YVertices(:), 'bo')
+
 
 end
