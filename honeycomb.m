@@ -22,16 +22,18 @@ yLim = yEdges([1, end]);
 % Calculate number of hexagon radii in data limits and calculate distance
 % between hexagon centers
 numXRadii = 3 / 2 * (numXBins - 1) + 1;
-rx = diff(xLim) / numXRadii;
-dx = 3 / 2 * rx;
-
 numYRadii = sqrt(3) / 2 * (2 * numYBins - 1);
+
+% Calculate radii
+rx = diff(xLim) / numXRadii;
 ry = diff(yLim) / numYRadii;
+
+% Calculate distance between hexagon centers
+dx = 3 / 2 * rx;
 dy = sqrt(3) * ry;
 
 
 % Calculate hexagon centers, such that hexagons cover entire data range
-% from x,y limit 1 to x,y limit 2
 xCenter = (xLim(1) + rx/2) : dx : (xLim(2) - rx/2);
 yCenter = yLim(1) : dy : (yLim(2) - dy/2);
 
