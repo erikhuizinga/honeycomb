@@ -57,8 +57,8 @@ XCenter = Centers(:, 2);
 
 %% Initialize hexagon vertices
 theta = (1/6 : 1/6 : 1) * 360;
-XVertices = bsxfun(@plus, XCenter, rx * cosd(theta));
-YVertices = bsxfun(@plus, YCenter, ry * sind(theta));
+XVertices = bsxfun(@plus, XCenter, rx * cosd(theta)).';
+YVertices = bsxfun(@plus, YCenter, ry * sind(theta)).';
 
 
 %% Determine bin counts
@@ -87,6 +87,19 @@ while n <= numHexagons && ~isempty(xx)
     
     % Increment counter
     n = n + 1;
+end
+
+
+%% Draw hexagons
+ax = newplot;
+patch(XVertices, YVertices, counts)
+
+% Set axes limits
+if ax.XTickMode == 'auto'
+    xlim(xLim)
+end
+if ax.YTickMode == 'auto'
+    ylim(yLim)
 end
 
 %% %TODO debug plots
