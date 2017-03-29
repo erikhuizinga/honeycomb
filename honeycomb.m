@@ -1,20 +1,63 @@
-function honeycomb(x, y, numBins)
+function varargout = honeycomb(varargin)
 % HONEYCOMB
 
 
-%% Discretize data into bins
-% Get number of bins in both directions
-numXBins = numBins;
-numYBins = numBins;
+%% Validate input arguments
+% Set defaults
+defaults.numBins = [];
 
+% Keep track of input argument index
+argIndex = 1;
+
+% Instantiate an input parser
+parser = inputParser;
+
+% Add x and y arguments
+parser.addRequired('x', @(x) validateData(x, mfilename, 'x', argIndex));
+argIndex = argIndex + 1;
+parser.addRequired('y', @(x) validateData(x, mfilename, 'y', argIndex));
+
+% Add optional argument numBins: the number of hexagonal bins in both
+% directions or, if specified as a two-element vector, the number of
+% hexagonal bins in horizontal and vertical direction
+argIndex = argIndex + 1;
+parser.addOptional('numBins', defaults.numBins, ...
+    @(x) validateNumBins(x, mfilename, argIndex));
+
+% Parse input arguments
+parser.parse(varargin{:});
+
+% Get variables from input parser
+struct2variables(parser.Results);
+%#ok<*NODEF>
+
+
+%% Parse input arguments
+% Parse number of bins
+if isscalar(numBins)
+    numXBins = numBins;
+    numYBins = numBins;
+elseif isvector(numBins)
+    numXBins = numBins(1);
+    numYBins = numBins(2);
+end
+
+
+%% Discretize data into bins
 % Get square bin edges
 % The number of bins is decremented by one for the discretize function,
 % because the number of hexagonal bins is one more than the number of
 % square bins
-[~, xEdges] = discretize(x, numXBins - 1);
-[~, yEdges] = discretize(y, numYBins - 1);
+if isempty(numBins)
+    [~, xEdges, yEdges] = histcounts2(x, y);
+    numXBins = numel(xEdges) - 1;
+    numYBins = numel(yEdges) - mod(numel(yEdges), 2);
+else
+    [~, xEdges, yEdges] = histcounts2(x, y, [numXBins - 1, numYBins - 1]);
+end
 
-% Get range of bins
+% Get range of bins, i.e., the rectangular area in which to position the
+% hexagonal bins 
 xLim = xEdges([1, end]);
 yLim = yEdges([1, end]);
 
@@ -91,8 +134,18 @@ end
 
 
 %% Draw hexagons
+% Prepare axes for a new plot
 ax = newplot;
-patch(XVertices, YVertices, counts)
+
+% Determine where no data was counted
+isIncluded = counts > 0;
+
+% Draw hexagons
+p = patch( ...
+    XVertices(:, isIncluded), ...
+    YVertices(:, isIncluded), ...
+    counts(isIncluded));
+
 
 % Set axes limits
 if ax.XTickMode == 'auto'
@@ -116,4 +169,8 @@ plot(XCenter, YCenter, 'ks')
 plot(XVertices(:), YVertices(:), 'kv')
 
 
+%% Set output
+if nargout
+    varargout = {p};
+end
 end
