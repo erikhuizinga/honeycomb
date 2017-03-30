@@ -2,7 +2,7 @@
 > Tools for hexagonal binning (honeycomb plot) and visualisation
 
 ## Installation
-Put all files or at least `honeycomb.m` somewhere on your MATLAB path.
+Put all files somewhere on your MATLAB path. At least, `honeycomb.m` and the `private` directory (with contents) should be in the same directory on the MATLAB path.
 
 ## Documentation
 Run `help honeycomb` or `doc honeycomb` for instructions.
