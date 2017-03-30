@@ -31,41 +31,99 @@ parser.parse(varargin{:});
 struct2variables(parser.Results);
 %#ok<*NODEF>
 
+% Assert x and y have the same size
+assert(all(size(x) == size(y)), ...
+    'honeycomb:dimensionMismatch', ...
+    'x and y must have the same dimensions')
+
 
 %% Parse input arguments
+% Parse data, exclude non-finite elements
+isFinite = isfinite(x) & isfinite(y);
+x(~isFinite) = [];
+y(~isFinite) = [];
+
+% Handle special number of elements
+if isempty(x)
+    warning( ...
+        'honeycomb:noFiniteData', ...
+        ['all data in x and / or y are non-finite; ' ...
+        'plotting one hexagon only'])
+end
+
+
 % Parse number of bins
 if isscalar(numBins)
+    % Set both horizontal and vertical number of bins to numBins
     numXBins = numBins;
     numYBins = numBins;
+    
+    % Set a boolean to make it possible to draw one hexagon only
+    isOneXBin = numBins == 1;
+    isOneYBin = isOneXBin;
+    
 elseif isvector(numBins)
+    % Get horizontal and vertical number of bins from numBins elements
     numXBins = numBins(1);
     numYBins = numBins(2);
+    
+    % Set a boolean to make it possible to draw one hexagon only
+    isOneXBin = numXBins == 1;
+    isOneYBin = numYBins == 1;
+    
+elseif numel(x) <= 1 && isempty(numBins)
+    % Ensure the one hexagon is drawn
+    numBins = 1;
+    numXBins = 1;
+    numYBins = 1;
+    
+    % Set a boolean to make it possible to draw one hexagon only
+    isOneXBin = true;
+    isOneYBin = true;
 end
+% At this point numXBins and numYBins are unknown if numBins is empty
 
 
-%% Discretize data into bins
+%% Prepare number of hexagons
 % Get square bin edges
-% The number of bins is decremented by one for the discretize function,
-% because the number of hexagonal bins is one more than the number of
-% square bins
 if isempty(numBins)
+    % Let the histcounts2 algorithm do the automatic binning
     [~, xEdges, yEdges] = histcounts2(x, y);
+    
+    % Determine the number of bins in either direction
     numXBins = numel(xEdges) - 1;
     numYBins = numel(yEdges) - mod(numel(yEdges), 2);
+    
+    % Set a boolean to make it possible to draw one hexagon only
+    isOneXBin = numXBins == 1;
+    isOneYBin = numYBins == 1;
+    
 else
-    [~, xEdges, yEdges] = histcounts2(x, y, [numXBins - 1, numYBins - 1]);
+    % Let the histcounts2 algorithm do the automatic binning
+    % Note that the number of bins is decremented by one if greater than
+    % one, because the number of hexagonal bins is one more than the number
+    % of square bins
+    [~, xEdges, yEdges] = ...
+        histcounts2(x, y, [numXBins - ~isOneXBin, numYBins - ~isOneYBin]);
 end
+% At this point numXBins and numYBins are known
+
 
 % Get range of bins, i.e., the rectangular area in which to position the
-% hexagonal bins 
+% hexagonal bins
 xLim = xEdges([1, end]);
 yLim = yEdges([1, end]);
 
 
-% Calculate number of hexagon radii in data limits and calculate distance
-% between hexagon centers
+% Calculate number of hexagon radii in data limits
 numXRadii = 3 / 2 * (numXBins - 1) + 1;
-numYRadii = sqrt(3) / 2 * (2 * numYBins - 1);
+if isOneXBin && isOneYBin
+    numYRadii = sqrt(3);
+elseif isOneXBin
+    numYRadii = sqrt(3) * numYBins;
+else
+    numYRadii = sqrt(3) / 2 * (2 * numYBins - 1);
+end
 
 % Calculate radii
 rx = diff(xLim) / numXRadii;
@@ -76,37 +134,74 @@ dx = 3 / 2 * rx;
 dy = sqrt(3) * ry;
 
 
-% Calculate hexagon centers, such that hexagons cover entire data range
-xCenter = (xLim(1) + rx/2) : dx : (xLim(2) - rx/2);
-yCenter = yLim(1) : dy : (yLim(2) - dy/2);
+%% Calculate hexagon centers
+% Note: the area spanning the horizontal data range is rx / 2 left and
+% right of the centers
+if isOneXBin
+    xCenters = mean(xLim);
+else
+    xCenters = (xLim(1) + rx/2) : dx : (xLim(2) - rx/2);
+end
+
+% Set the vertical shift distance for every second hexagon column
+if ~isOneXBin
+    sy = dy / 2;
+end
+
+% Note: the area spanning the vertical data range is dy / 2 above and below
+% the centers
+if isOneXBin && ~isOneYBin
+    % Space the centers such that the top and bottom hexagon vertices span
+    % the entire range
+    yCenters = linspace(yLim(1) + dy/2, yLim(2) - dy/2, numYBins);
+    
+elseif isOneYBin
+    if isOneXBin
+        % Set the center to the middle of the data range
+        yCenters = mean(yLim);
+        
+    else
+        % Set the center to the middle, but allow for the shift
+        yCenters = mean(yLim) - sy/2;
+    end
+else
+    % Set the default vertical centers
+    yCenters = linspace(yLim(1), yLim(2) - sy, numYBins);
+end
 
 
-%% Initialize a grid of hexagon centers
-[XCenter, YCenter] = meshgrid(xCenter, yCenter);
+% Initialize a grid of hexagon centers
+[XCenters, YCenters] = meshgrid(xCenters, yCenters);
 
-% Shift y centers
-isShifted = 1 : 2 : numYBins;
-YCenter(:, isShifted) = YCenter(:, isShifted) + dy/2;
+% Shift y centers on evey second horizontal bin
+if ~isOneXBin
+    isShifted = 1 : 2 : numXBins;
+    YCenters(:, isShifted) = YCenters(:, isShifted) + dy/2;
+end
+
 
 % Vectorize centers
-XCenter = XCenter(:);
-YCenter = YCenter(:);
+XCenters = XCenters(:);
+YCenters = YCenters(:);
 
 % Sort center coordinates from top to bottom and right to left
-Centers = flipud(sortrows([YCenter, XCenter]));
-YCenter = Centers(:, 1);
-XCenter = Centers(:, 2);
+Centers = flipud(sortrows([YCenters, XCenters]));
+YCenters = Centers(:, 1);
+XCenters = Centers(:, 2);
 
 
-%% Initialize hexagon vertices
+%% Calculate hexagon vertices
+% Set vertex angles from center
 theta = (1/6 : 1/6 : 1) * 360;
-XVertices = bsxfun(@plus, XCenter, rx * cosd(theta)).';
-YVertices = bsxfun(@plus, YCenter, ry * sind(theta)).';
+
+% Calculate vertex coordinates
+XVertices = bsxfun(@plus, XCenters, rx * cosd(theta)).';
+YVertices = bsxfun(@plus, YCenters, ry * sind(theta)).';
 
 
 %% Determine bin counts
 % Get number of hexagons
-numHexagons = numel(XCenter);
+numHexagons = numel(XCenters);
 
 % Preallocate bin counts
 counts = zeros(numHexagons, 1);
@@ -132,13 +227,17 @@ while n <= numHexagons && ~isempty(xx)
     n = n + 1;
 end
 
+% Determine where no data was counted
+if isOneXBin && isOneYBin
+    isIncluded = true;
+else
+    isIncluded = counts > 0;
+end
+
 
 %% Draw hexagons
 % Prepare axes for a new plot
 ax = newplot;
-
-% Determine where no data was counted
-isIncluded = counts > 0;
 
 % Draw hexagons
 p = patch( ...
@@ -147,13 +246,13 @@ p = patch( ...
     counts(isIncluded));
 
 
-% Set axes limits
-if ax.XTickMode == 'auto'
-    xlim(xLim)
+%% Customize axes
+if ~ishold(ax)
+    % Set axes properties
+    axis(ax, 'tight')
+    ax.Box = 'on';
 end
-if ax.YTickMode == 'auto'
-    ylim(yLim)
-end
+
 
 %% %TODO debug plots
 hold on
@@ -162,10 +261,12 @@ hold on
 plot(x(:), y(:), 'or')
 
 % Draw data limits
-plot([xLim(1), xLim, flip(xLim)], [yLim, flip(yLim), yLim(1)], 'r:')
+plot( ...
+    [xLim(1), xLim, flip(xLim)], [yLim, flip(yLim), yLim(1)], ...
+    'rs:', 'MarkerFaceColor', 'r')
 
 % Scatter hexagon centers and vertices
-plot(XCenter, YCenter, 'ks')
+plot(XCenters, YCenters, 'ks')
 plot(XVertices(:), YVertices(:), 'kv')
 
 
