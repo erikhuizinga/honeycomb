@@ -5,6 +5,7 @@ function varargout = honeycomb(varargin)
 %% Validate input arguments
 % Set defaults
 defaults.numBins = [];
+defaults.Debug = false;
 
 % Keep track of input argument index
 argIndex = 1;
@@ -24,12 +25,18 @@ argIndex = argIndex + 1;
 parser.addOptional('numBins', defaults.numBins, ...
     @(x) validateNumBins(x, mfilename, argIndex));
 
+% Add undocumented Name-Value pair argument to create additional debugging
+% plots
+parser.addParameter('Debug', defaults.Debug, @islogical)
+
+
 % Parse input arguments
 parser.parse(varargin{:});
 
 % Get variables from input parser
 struct2variables(parser.Results);
 %#ok<*NODEF>
+isDebug = Debug;
 
 % Assert x and y have the same size
 assert(all(size(x) == size(y)), ...
@@ -254,20 +261,22 @@ if ~ishold(ax)
 end
 
 
-%% %TODO debug plots
-hold on
-
-% Scatter data
-plot(x(:), y(:), 'or')
-
-% Draw data limits
-plot( ...
-    [xLim(1), xLim, flip(xLim)], [yLim, flip(yLim), yLim(1)], ...
-    'rs:', 'MarkerFaceColor', 'r')
-
-% Scatter hexagon centers and vertices
-plot(XCenters, YCenters, 'ks')
-plot(XVertices(:), YVertices(:), 'kv')
+%% Create debug plots
+if isDebug
+    hold on
+    
+    % Scatter data
+    plot(x(:), y(:), 'or')
+    
+    % Draw data limits
+    plot( ...
+        [xLim(1), xLim, flip(xLim)], [yLim, flip(yLim), yLim(1)], ...
+        'rs:', 'MarkerFaceColor', 'r')
+    
+    % Scatter hexagon centers and vertices
+    plot(XCenters, YCenters, 'ks')
+    plot(XVertices(:), YVertices(:), 'kv')
+end
 
 
 %% Set output
