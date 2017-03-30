@@ -1,18 +1,21 @@
 function varargout = honeycomb(varargin)
 %HONEYCOMB Plot a bivariate histogram using hexagons a.k.a. honeycomb plot.
-% 
+%
 %   HONEYCOMB(X, Y) plots a bivariate histogram of X and Y using hexagonal
 %   bins. X and Y can be arrays of any shape, but they must have the same
 %   size. HONEYCOMB determines the bin edges using the same automatic
 %   binning algorithm as histogram2, which returns uniform bins of an area
 %   chosen to cover the range of values in X and Y and reveal the shape of
 %   the underlying distribution.
-% 
+%
 %   HONEYCOMB(X, Y, NBINS), where NBINS is a scalar or 2-element vector,
 %   specifies the number of bins to use. A scalar specifies the same number
 %   of bins in each dimension, whereas a 2-element vector specifies a
 %   different number of bins for the X and Y dimensions with the two
 %   elements respectively.
+%
+%   P = HONEYCOMB(...) also returns a Patch object. Use this to inspect and
+%   adjust properties of the hexagons.
 
 % Copyright (c) 2017, Erik Huizinga
 
