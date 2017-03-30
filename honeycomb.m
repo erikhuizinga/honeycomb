@@ -1,5 +1,5 @@
 function varargout = honeycomb(varargin)
-%HONEYCOMB Plot a bivariate histogram using hexagonal bins.
+%HONEYCOMB Plot a bivariate histogram using hexagons a.k.a. honeycomb plot.
 % 
 %   HONEYCOMB(X, Y) plots a bivariate histogram of X and Y using hexagonal
 %   bins. X and Y can be arrays of any shape, but they must have the same
