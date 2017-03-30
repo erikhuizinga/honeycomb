@@ -10,8 +10,12 @@ function varargout = honeycomb(varargin)
 % 
 %   HONEYCOMB(X, Y, NBINS), where NBINS is a scalar or 2-element vector,
 %   specifies the number of bins to use. A scalar specifies the same number
-%   of bins in each dimension, whereas the 2-element vector [nbinsx nbinsy]
-%   specifies a different number of bins for the X and Y dimensions.
+%   of bins in each dimension, whereas a 2-element vector specifies a
+%   different number of bins for the X and Y dimensions with the two
+%   elements respectively.
+
+% Copyright (c) 2017, Erik Huizinga
+
 
 %% Validate input arguments
 % Set defaults
